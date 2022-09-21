@@ -2,17 +2,22 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
 
     % Properties that correspond to underlying components
     properties (Access = private, Transient, NonCopyable)
-        MainTab                    matlab.ui.container.TabGroup
-        TampilanHistogramTab       matlab.ui.container.Tab
-        TampilkanHistogramButton   matlab.ui.control.Button
-        JudulCitraLabel1           matlab.ui.control.Label
-        PilihFileCitraButton1      matlab.ui.control.Button
-        PerbaikanKualitasTab       matlab.ui.container.Tab
-        PerataanHistogramTab       matlab.ui.container.Tab
+        MainTab                        matlab.ui.container.TabGroup
+        TampilanHistogramTab           matlab.ui.container.Tab
+        TampilkanHistogramButton       matlab.ui.control.Button
+        NamaFileCitraLabel1            matlab.ui.control.Label
+        PilihFileCitraButton1          matlab.ui.control.Button
+        PerbaikanKualitasTab           matlab.ui.container.Tab
+        PerataanHistogramTab           matlab.ui.container.Tab
         JalankanPerataanHistogramButton  matlab.ui.control.Button
-        JudulCitraLabel3           matlab.ui.control.Label
-        PilihFileCitraButton3      matlab.ui.control.Button
-        HistogramSpecificationTab  matlab.ui.container.Tab
+        NamaFileCitraLabel3            matlab.ui.control.Label
+        PilihFileCitraButton3          matlab.ui.control.Button
+        HistogramSpecificationTab      matlab.ui.container.Tab
+        JalankanHistogramSpecificationButton  matlab.ui.control.Button
+        NamaFileCitraReferensiLabel    matlab.ui.control.Label
+        NamaFileCitraInputLabel        matlab.ui.control.Label
+        PilihFileCitraReferensiButton  matlab.ui.control.Button
+        PilihFileCitraInputButton      matlab.ui.control.Button
     end
 
     
@@ -66,6 +71,25 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
             end
         end
         
+        % Returns inverse histogram equalization result, in uint8
+        % res(i) = biggest integer in (0, 256] s.t. map(res(i)) <= i
+        % if no such integer exists, res(i) = 1
+        function res = GetInverseHisteqMapping(comp, image)
+            map = comp.GetHisteqMapping(image);
+            [numColor, ~] = size(map);
+
+            res = zeros([numColor, 256]);
+            j = 2;
+            for c = 1:numColor
+                for i = 1:256
+                    while j < 256 && map(c, j) <= i
+                        j = j+1;
+                    end
+                    res(c, i) = j-1;
+                end
+            end
+        end
+        
         % Applies color mapping map to image
         function res = ApplyMapping(~, image, map)
             map = round(map); % Round map to integer before applying
@@ -93,9 +117,9 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
             % preventing main GUI from minimizing after uigetfile
             dummyWindow = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]);
 
-            [file, path] = uigetfile({'*.png;*.jpg;*.jpeg;*.tif'});
+            [file, path] = uigetfile({'*.png;*.jpg;*.jpeg;*.tif;*.bmp'});
             if file ~= 0
-                comp.JudulCitraLabel1.Text = strcat(path, file);
+                comp.NamaFileCitraLabel1.Text = strcat(path, file);
             end
             delete(dummyWindow);
         end
@@ -105,9 +129,33 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
             % preventing main GUI from minimizing after uigetfile
             dummyWindow = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]);
 
-            [file, path] = uigetfile({'*.png;*.jpg;*.jpeg;*.tif'});
+            [file, path] = uigetfile({'*.png;*.jpg;*.jpeg;*.tif;*.bmp'});
             if file ~= 0
-                comp.JudulCitraLabel3.Text = strcat(path, file);
+                comp.NamaFileCitraLabel3.Text = strcat(path, file);
+            end
+            delete(dummyWindow);
+        end
+
+        % Button pushed function: PilihFileCitraInputButton
+        function PilihFileCitraInputButtonPushed(comp, event)
+             % preventing main GUI from minimizing after uigetfile
+            dummyWindow = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]);
+
+            [file, path] = uigetfile({'*.png;*.jpg;*.jpeg;*.tif;*.bmp'});
+            if file ~= 0
+                comp.NamaFileCitraInputLabel.Text = strcat(path, file);
+            end
+            delete(dummyWindow);
+        end
+
+        % Button pushed function: PilihFileCitraReferensiButton
+        function PilihFileCitraReferensiButtonPushed(comp, event)
+             % preventing main GUI from minimizing after uigetfile
+            dummyWindow = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]);
+
+            [file, path] = uigetfile({'*.png;*.jpg;*.jpeg;*.tif;*.bmp'});
+            if file ~= 0
+                comp.NamaFileCitraReferensiLabel.Text = strcat(path, file);
             end
             delete(dummyWindow);
         end
@@ -115,17 +163,17 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         % Button pushed function: TampilkanHistogramButton
         function TampilkanHistogramButtonPushed(comp, event)
             try
-                image = imread(comp.JudulCitraLabel1.Text);
+                image = imread(comp.NamaFileCitraLabel1.Text);
                 comp.ShowImageHistogram(image)
             catch e
-                msgbox("File citra tidak ditemukan.", "Error", "error");
+                msgbox(e.message, "Error", "error");
             end
         end
 
         % Button pushed function: JalankanPerataanHistogramButton
         function JalankanPerataanHistogramButtonPushed(comp, event)
             try
-                image = imread(comp.JudulCitraLabel3.Text);
+                image = imread(comp.NamaFileCitraLabel3.Text);
 
                 % Show initial image
                 figure("Name", "Citra Input")
@@ -140,7 +188,48 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
                 % Show histogram equalization result histogram
                 comp.ShowImageHistogram(res)
             catch e
-                msgbox("File citra tidak ditemukan.", "Error", "error");
+                msgbox(e.message, "Error", "error");
+            end
+        end
+
+        % Button pushed function: JalankanHistogramSpecificationButton
+        function JalankanHistogramSpecificationButtonPushed(comp, event)
+            try
+                image = imread(comp.NamaFileCitraInputLabel.Text);
+                reference = imread(comp.NamaFileCitraReferensiLabel.Text);
+                
+                [~, ~, numColor1] = size(image);
+                [~, ~, numColor2] = size(reference);
+                if numColor1 ~= numColor2
+                    throw(MException("histogramSpecification:inputError", ...
+                        "Mode warna dua citra tidak sama"))
+                end
+
+                % Show initial image
+                figure("Name", "Citra Input")
+                imshow(image);
+                % Show initial histogram
+                comp.ShowImageHistogram(image);
+
+                % Show reference image
+                figure("Name", "Citra Referensi")
+                imshow(reference);
+                % Show reference histogram
+                comp.ShowImageHistogram(reference);
+
+                % Apply histogram specification
+                map1 = comp.GetHisteqMapping(image);
+                map2 = comp.GetInverseHisteqMapping(reference);
+                res = comp.ApplyMapping(image, map1);
+                res = comp.ApplyMapping(res, map2);
+
+                % Show histogram specification result image
+                figure("Name", "Citra Hasil")
+                imshow(res);
+                % Show histogram specification result histogram
+                comp.ShowImageHistogram(res)
+            catch e
+                msgbox(e.message, "Error", "error");
             end
         end
     end
@@ -170,18 +259,19 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
             % Create PilihFileCitraButton1
             comp.PilihFileCitraButton1 = uibutton(comp.TampilanHistogramTab, 'push');
             comp.PilihFileCitraButton1.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @PilihFileCitraButton1Pushed, true);
-            comp.PilihFileCitraButton1.Position = [65 253 100 22];
+            comp.PilihFileCitraButton1.Position = [281 295 100 22];
             comp.PilihFileCitraButton1.Text = 'Pilih File Citra';
 
-            % Create JudulCitraLabel1
-            comp.JudulCitraLabel1 = uilabel(comp.TampilanHistogramTab);
-            comp.JudulCitraLabel1.Position = [54 195 281 22];
-            comp.JudulCitraLabel1.Text = 'Judul Citra';
+            % Create NamaFileCitraLabel1
+            comp.NamaFileCitraLabel1 = uilabel(comp.TampilanHistogramTab);
+            comp.NamaFileCitraLabel1.HorizontalAlignment = 'center';
+            comp.NamaFileCitraLabel1.Position = [189 263 281 22];
+            comp.NamaFileCitraLabel1.Text = 'Nama File Citra';
 
             % Create TampilkanHistogramButton
             comp.TampilkanHistogramButton = uibutton(comp.TampilanHistogramTab, 'push');
             comp.TampilkanHistogramButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @TampilkanHistogramButtonPushed, true);
-            comp.TampilkanHistogramButton.Position = [51 114 128 22];
+            comp.TampilkanHistogramButton.Position = [266 174 128 22];
             comp.TampilkanHistogramButton.Text = 'Tampilkan Histogram';
 
             % Create PerbaikanKualitasTab
@@ -195,23 +285,54 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
             % Create PilihFileCitraButton3
             comp.PilihFileCitraButton3 = uibutton(comp.PerataanHistogramTab, 'push');
             comp.PilihFileCitraButton3.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @PilihFileCitraButton3Pushed, true);
-            comp.PilihFileCitraButton3.Position = [66 359 100 22];
+            comp.PilihFileCitraButton3.Position = [281 295 100 22];
             comp.PilihFileCitraButton3.Text = 'Pilih File Citra';
 
-            % Create JudulCitraLabel3
-            comp.JudulCitraLabel3 = uilabel(comp.PerataanHistogramTab);
-            comp.JudulCitraLabel3.Position = [93 295 63 22];
-            comp.JudulCitraLabel3.Text = 'Judul Citra';
+            % Create NamaFileCitraLabel3
+            comp.NamaFileCitraLabel3 = uilabel(comp.PerataanHistogramTab);
+            comp.NamaFileCitraLabel3.HorizontalAlignment = 'center';
+            comp.NamaFileCitraLabel3.Position = [183 263 293 22];
+            comp.NamaFileCitraLabel3.Text = 'Nama File Citra';
 
             % Create JalankanPerataanHistogramButton
             comp.JalankanPerataanHistogramButton = uibutton(comp.PerataanHistogramTab, 'push');
             comp.JalankanPerataanHistogramButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @JalankanPerataanHistogramButtonPushed, true);
-            comp.JalankanPerataanHistogramButton.Position = [52 195 174 22];
+            comp.JalankanPerataanHistogramButton.Position = [243 174 174 22];
             comp.JalankanPerataanHistogramButton.Text = 'Jalankan Perataan Histogram';
 
             % Create HistogramSpecificationTab
             comp.HistogramSpecificationTab = uitab(comp.MainTab);
             comp.HistogramSpecificationTab.Title = 'Histogram Specification';
+
+            % Create PilihFileCitraInputButton
+            comp.PilihFileCitraInputButton = uibutton(comp.HistogramSpecificationTab, 'push');
+            comp.PilihFileCitraInputButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @PilihFileCitraInputButtonPushed, true);
+            comp.PilihFileCitraInputButton.Position = [125 295 120 22];
+            comp.PilihFileCitraInputButton.Text = 'Pilih File Citra Input';
+
+            % Create PilihFileCitraReferensiButton
+            comp.PilihFileCitraReferensiButton = uibutton(comp.HistogramSpecificationTab, 'push');
+            comp.PilihFileCitraReferensiButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @PilihFileCitraReferensiButtonPushed, true);
+            comp.PilihFileCitraReferensiButton.Position = [405 295 144 22];
+            comp.PilihFileCitraReferensiButton.Text = 'Pilih File Citra Referensi';
+
+            % Create NamaFileCitraInputLabel
+            comp.NamaFileCitraInputLabel = uilabel(comp.HistogramSpecificationTab);
+            comp.NamaFileCitraInputLabel.HorizontalAlignment = 'center';
+            comp.NamaFileCitraInputLabel.Position = [90 263 192 22];
+            comp.NamaFileCitraInputLabel.Text = 'Nama File Citra Input';
+
+            % Create NamaFileCitraReferensiLabel
+            comp.NamaFileCitraReferensiLabel = uilabel(comp.HistogramSpecificationTab);
+            comp.NamaFileCitraReferensiLabel.HorizontalAlignment = 'center';
+            comp.NamaFileCitraReferensiLabel.Position = [380 263 196 22];
+            comp.NamaFileCitraReferensiLabel.Text = 'Nama File Citra Referensi';
+
+            % Create JalankanHistogramSpecificationButton
+            comp.JalankanHistogramSpecificationButton = uibutton(comp.HistogramSpecificationTab, 'push');
+            comp.JalankanHistogramSpecificationButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @JalankanHistogramSpecificationButtonPushed, true);
+            comp.JalankanHistogramSpecificationButton.Position = [231 174 203 22];
+            comp.JalankanHistogramSpecificationButton.Text = 'Jalankan Histogram Specification';
         end
     end
 end
