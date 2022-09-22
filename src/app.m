@@ -19,7 +19,7 @@ classdef app < matlab.ui.componentcontainer.ComponentContainer
         PilihFileCitraReferensiButton  matlab.ui.control.Button
         PilihFileCitraInputButton      matlab.ui.control.Button
         ContraststretchingButton   matlab.ui.control.Button
-        nthtransformButton         matlab.ui.control.Button
+        PowerlawtransformButton    matlab.ui.control.Button
         LogtransformButton         matlab.ui.control.Button
         ImagebrighteningButton     matlab.ui.control.Button
         brgammaSpinner             matlab.ui.control.Spinner
@@ -564,11 +564,11 @@ classdef app < matlab.ui.componentcontainer.ComponentContainer
             comp.LogtransformButton.Position = [89 147 100 23];
             comp.LogtransformButton.Text = 'Log transform';
 
-            % Create nthtransformButton
-            comp.nthtransformButton = uibutton(comp.PerbaikanKualitasTab, 'push');
-            comp.nthtransformButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @JalankanNthtransform, true);
-            comp.nthtransformButton.Position = [89 114 100 23];
-            comp.nthtransformButton.Text = 'n-th transform';
+            % Create PowerlawtransformButton
+            comp.PowerlawtransformButton = uibutton(comp.PerbaikanKualitasTab, 'push');
+            comp.PowerlawtransformButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @JalankanNthtransform, true);
+            comp.PowerlawtransformButton.Position = [77 114 125 23];
+            comp.PowerlawtransformButton.Text = 'Power-law transform';
 
             % Create ContraststretchingButton
             comp.ContraststretchingButton = uibutton(comp.PerbaikanKualitasTab, 'push');
