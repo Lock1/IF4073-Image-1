@@ -355,7 +355,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
                 figure("Name", "Citra Hasil")
                 imshow(res);
             catch e
-                msgbox("File citra tidak ditemukan.", "Error", "error");
+                msgbox(e.message, "Error", "error");
             end
         end
 
@@ -373,7 +373,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
                 figure("Name", "Citra Hasil")
                 imshow(res);
             catch e
-                msgbox("File citra tidak ditemukan.", "Error", "error");
+                msgbox(e.message, "Error", "error");
             end
         end
 
@@ -391,7 +391,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
                 figure("Name", "Citra Hasil")
                 imshow(res);
             catch e
-                msgbox("File citra tidak ditemukan.", "Error", "error");
+                msgbox(e.message, "Error", "error");
             end
         end
 
@@ -409,7 +409,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
                 figure("Name", "Citra Hasil")
                 imshow(res);
             catch e
-                msgbox("File citra tidak ditemukan.", "Error", "error");
+                msgbox(e.message, "Error", "error");
             end
         end
     end
