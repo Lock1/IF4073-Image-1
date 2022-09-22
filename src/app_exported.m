@@ -18,6 +18,17 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         NamaFileCitraInputLabel        matlab.ui.control.Label
         PilihFileCitraReferensiButton  matlab.ui.control.Button
         PilihFileCitraInputButton      matlab.ui.control.Button
+        ContraststretchingButton   matlab.ui.control.Button
+        nthtransformButton         matlab.ui.control.Button
+        LogtransformButton         matlab.ui.control.Button
+        ImagebrighteningButton     matlab.ui.control.Button
+        brgammaSpinner             matlab.ui.control.Spinner
+        brgammaSpinnerLabel        matlab.ui.control.Label
+        acSpinner                  matlab.ui.control.Spinner
+        acSpinnerLabel             matlab.ui.control.Label
+        ParameterLabel             matlab.ui.control.Label
+        JudulCitraLabel2           matlab.ui.control.Label
+        PilihFileCitraButton2      matlab.ui.control.Button
     end
 
     
@@ -106,6 +117,91 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
 
             res = uint8(res);
         end
+
+        % Image Brightening
+        function res = ImageBrightening(~, image, a, b)
+            [numRow, numColumn, numColor] = size(image);
+            res = zeros([numRow, numColumn, numColor]);
+            for i = 1:numRow
+                for j = 1:numColumn
+                    for c = 1:numColor
+                        % Clamp [0, 256)
+                        res(i, j, c) = image(i, j, c) * a + b;
+                        res(i, j, c) = max(0, min(255, res(i, j, c)));
+                    end
+                end
+            end
+
+            res = uint8(res);
+        end
+
+        % Log transform
+        function res = ImageLogTransform(~, image, cr)
+            [numRow, numColumn, numColor] = size(image);
+            res = zeros([numRow, numColumn, numColor]);
+            for i = 1:numRow
+                for j = 1:numColumn
+                    for c = 1:numColor
+                        % Clamp [0, 256)
+                        res(i, j, c) = round(cr * log10(1 + double(image(i, j, c))));
+                        res(i, j, c) = max(0, min(255, res(i, j, c)));
+                    end
+                end
+            end
+
+            res = uint8(res);
+        end
+
+        % Nth transform
+        function res = ImageNthTransform(~, image, cr, gamma)
+            [numRow, numColumn, numColor] = size(image);
+            res = zeros([numRow, numColumn, numColor]);
+            for i = 1:numRow
+                for j = 1:numColumn
+                    for c = 1:numColor
+                        % Clamp [0, 256), normed with 8-bit depth in mind
+                        res(i, j, c) = cr * power(double(image(i, j, c))/255, gamma)*255;
+                        res(i, j, c) = max(0, min(255, res(i, j, c)));
+                    end
+                end
+            end
+
+            res = uint8(res);
+        end
+
+        % Contrast stretching
+        function res = ImageContrastStretching(~, image)
+            [numRow, numColumn, numColor] = size(image);
+            res = zeros([numRow, numColumn, numColor]);
+            rmin = [255, 255, 255];
+            rmax = [0, 0, 0];
+  
+            for i = 1:numRow
+                for j = 1:numColumn
+                    for c = 1:numColor
+                        if (rmax(c) < image(i, j, c))
+                            rmax(c) = image(i, j, c);
+                        end
+
+                        if (rmin(c) > image(i, j, c))
+                            rmin(c) = image(i, j, c);
+                        end
+                    end
+                end
+            end
+
+            for i = 1:numRow
+                for j = 1:numColumn
+                    for c = 1:numColor
+                        % Clamp [0, 256)
+                        res(i, j, c) = (image(i, j, c) - rmin(c))*(255/(rmax(c)-rmin(c)));
+                        res(i, j, c) = max(0, min(255, res(i, j, c)));
+                    end
+                end
+            end
+
+            res = uint8(res);
+        end
     end
     
 
@@ -120,6 +216,18 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
             [file, path] = uigetfile({'*.png;*.jpg;*.jpeg;*.tif;*.bmp'});
             if file ~= 0
                 comp.NamaFileCitraLabel1.Text = strcat(path, file);
+            end
+            delete(dummyWindow);
+        end
+
+        % Button pushed function: PilihFileCitraButton2
+        function PilihFileCitraButton2Pushed(comp, event)
+            % preventing main GUI from minimizing after uigetfile
+            dummyWindow = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]);
+
+            [file, path] = uigetfile({'*.png;*.jpg;*.jpeg;*.tif;*.bmp'});
+            if file ~= 0
+                comp.JudulCitraLabel2.Text = strcat(path, file);
             end
             delete(dummyWindow);
         end
@@ -232,6 +340,78 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
                 msgbox(e.message, "Error", "error");
             end
         end
+
+        % Button pushed function: ImagebrighteningButton
+        function JalankanImageBrightening(comp, event)
+            try
+                image = imread(comp.JudulCitraLabel2.Text);
+
+                % Initial image
+                figure("Name", "Citra Input")
+                imshow(image);
+
+                % Image brightening
+                res = comp.ImageBrightening(image, comp.acSpinner.Value, comp.brgammaSpinner.Value);
+                figure("Name", "Citra Hasil")
+                imshow(res);
+            catch e
+                msgbox("File citra tidak ditemukan.", "Error", "error");
+            end
+        end
+
+        % Button pushed function: LogtransformButton
+        function JalankanLogTransform(comp, event)
+            try
+                image = imread(comp.JudulCitraLabel2.Text);
+
+                % Initial image
+                figure("Name", "Citra Input")
+                imshow(image);
+
+                % Image brightening
+                res = comp.ImageLogTransform(image, comp.acSpinner.Value);
+                figure("Name", "Citra Hasil")
+                imshow(res);
+            catch e
+                msgbox("File citra tidak ditemukan.", "Error", "error");
+            end
+        end
+
+        % Button pushed function: nthtransformButton
+        function JalankanNthtransform(comp, event)
+            try
+                image = imread(comp.JudulCitraLabel2.Text);
+
+                % Initial image
+                figure("Name", "Citra Input")
+                imshow(image);
+
+                % Image brightening
+                res = comp.ImageNthTransform(image, comp.acSpinner.Value, comp.brgammaSpinner.Value);
+                figure("Name", "Citra Hasil")
+                imshow(res);
+            catch e
+                msgbox("File citra tidak ditemukan.", "Error", "error");
+            end
+        end
+
+        % Button pushed function: ContraststretchingButton
+        function JalankanContrastStrecthing(comp, event)
+            try
+                image = imread(comp.JudulCitraLabel2.Text);
+
+                % Initial image
+                figure("Name", "Citra Input")
+                imshow(image);
+
+                % Image brightening
+                res = comp.ImageContrastStretching(image);
+                figure("Name", "Citra Hasil")
+                imshow(res);
+            catch e
+                msgbox("File citra tidak ditemukan.", "Error", "error");
+            end
+        end
     end
 
     methods (Access = protected)
@@ -333,6 +513,66 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
             comp.JalankanHistogramSpecificationButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @JalankanHistogramSpecificationButtonPushed, true);
             comp.JalankanHistogramSpecificationButton.Position = [231 174 203 22];
             comp.JalankanHistogramSpecificationButton.Text = 'Jalankan Histogram Specification';
+
+            % Create PilihFileCitraButton2
+            comp.PilihFileCitraButton2 = uibutton(comp.PerbaikanKualitasTab, 'push');
+            comp.PilihFileCitraButton2.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @PilihFileCitraButton2Pushed, true);
+            comp.PilihFileCitraButton2.Position = [56 337 100 23];
+            comp.PilihFileCitraButton2.Text = 'Pilih File Citra';
+
+            % Create JudulCitraLabel2
+            comp.JudulCitraLabel2 = uilabel(comp.PerbaikanKualitasTab);
+            comp.JudulCitraLabel2.Position = [60 367 422 22];
+            comp.JudulCitraLabel2.Text = 'Judul Citra';
+
+            % Create ParameterLabel
+            comp.ParameterLabel = uilabel(comp.PerbaikanKualitasTab);
+            comp.ParameterLabel.Position = [60 295 61 22];
+            comp.ParameterLabel.Text = 'Parameter';
+
+            % Create acSpinnerLabel
+            comp.acSpinnerLabel = uilabel(comp.PerbaikanKualitasTab);
+            comp.acSpinnerLabel.HorizontalAlignment = 'right';
+            comp.acSpinnerLabel.Position = [81 263 25 22];
+            comp.acSpinnerLabel.Text = 'a, c';
+
+            % Create acSpinner
+            comp.acSpinner = uispinner(comp.PerbaikanKualitasTab);
+            comp.acSpinner.Position = [121 263 100 22];
+
+            % Create brgammaSpinnerLabel
+            comp.brgammaSpinnerLabel = uilabel(comp.PerbaikanKualitasTab);
+            comp.brgammaSpinnerLabel.HorizontalAlignment = 'right';
+            comp.brgammaSpinnerLabel.Position = [37 232 68 22];
+            comp.brgammaSpinnerLabel.Text = 'b, r, gamma';
+
+            % Create brgammaSpinner
+            comp.brgammaSpinner = uispinner(comp.PerbaikanKualitasTab);
+            comp.brgammaSpinner.Position = [121 232 100 22];
+
+            % Create ImagebrighteningButton
+            comp.ImagebrighteningButton = uibutton(comp.PerbaikanKualitasTab, 'push');
+            comp.ImagebrighteningButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @JalankanImageBrightening, true);
+            comp.ImagebrighteningButton.Position = [83 177 111 23];
+            comp.ImagebrighteningButton.Text = 'Image brightening';
+
+            % Create LogtransformButton
+            comp.LogtransformButton = uibutton(comp.PerbaikanKualitasTab, 'push');
+            comp.LogtransformButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @JalankanLogTransform, true);
+            comp.LogtransformButton.Position = [89 147 100 23];
+            comp.LogtransformButton.Text = 'Log transform';
+
+            % Create nthtransformButton
+            comp.nthtransformButton = uibutton(comp.PerbaikanKualitasTab, 'push');
+            comp.nthtransformButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @JalankanNthtransform, true);
+            comp.nthtransformButton.Position = [89 114 100 23];
+            comp.nthtransformButton.Text = 'n-th transform';
+
+            % Create ContraststretchingButton
+            comp.ContraststretchingButton = uibutton(comp.PerbaikanKualitasTab, 'push');
+            comp.ContraststretchingButton.ButtonPushedFcn = matlab.apps.createCallbackFcn(comp, @JalankanContrastStrecthing, true);
+            comp.ContraststretchingButton.Position = [81 83 116 23];
+            comp.ContraststretchingButton.Text = 'Contrast stretching';
         end
     end
 end
