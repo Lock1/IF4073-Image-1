@@ -83,20 +83,22 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
         
         % Returns inverse histogram equalization result, in uint8
-        % res(i) = biggest integer in (0, 256] s.t. map(res(i)) <= i
-        % if no such integer exists, res(i) = 1
+        % res(i) = an integer in (0, 256] s.t. |map(res(i)) - i| is minimum
+        % if multiple possibility exists, minimum value is taken
         function res = GetInverseHisteqMapping(comp, image)
             map = comp.GetHisteqMapping(image);
             [numColor, ~] = size(map);
 
             res = zeros([numColor, 256]);
-            j = 2;
             for c = 1:numColor
                 for i = 1:256
-                    while j < 256 && map(c, j) <= i
-                        j = j+1;
+                    dist = 300;
+                    for j = 1:256
+                        if abs(map(c, j) - i) < dist
+                            res(c, i) = j;
+                            dist = abs(map(c, j) - i);
+                        end
                     end
-                    res(c, i) = j-1;
                 end
             end
         end
