@@ -1,4 +1,4 @@
-classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
+classdef app < matlab.ui.componentcontainer.ComponentContainer
 
     % Properties that correspond to underlying components
     properties (Access = private, Transient, NonCopyable)
