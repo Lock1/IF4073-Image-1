@@ -209,7 +209,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
     methods (Access = private)
 
         % Button pushed function: PilihFileCitraButton1
-        function PilihFileCitraButton1Pushed(comp, event)
+        function PilihFileCitraButton1Pushed(comp, ~)
             % preventing main GUI from minimizing after uigetfile
             dummyWindow = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]);
 
@@ -221,7 +221,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: PilihFileCitraButton2
-        function PilihFileCitraButton2Pushed(comp, event)
+        function PilihFileCitraButton2Pushed(comp, ~)
             % preventing main GUI from minimizing after uigetfile
             dummyWindow = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]);
 
@@ -233,7 +233,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: PilihFileCitraButton3
-        function PilihFileCitraButton3Pushed(comp, event)
+        function PilihFileCitraButton3Pushed(comp, ~)
             % preventing main GUI from minimizing after uigetfile
             dummyWindow = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]);
 
@@ -245,7 +245,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: PilihFileCitraInputButton
-        function PilihFileCitraInputButtonPushed(comp, event)
+        function PilihFileCitraInputButtonPushed(comp, ~)
              % preventing main GUI from minimizing after uigetfile
             dummyWindow = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]);
 
@@ -257,7 +257,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: PilihFileCitraReferensiButton
-        function PilihFileCitraReferensiButtonPushed(comp, event)
+        function PilihFileCitraReferensiButtonPushed(comp, ~)
              % preventing main GUI from minimizing after uigetfile
             dummyWindow = figure('Renderer', 'painters', 'Position', [-100 -100 0 0]);
 
@@ -269,7 +269,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: TampilkanHistogramButton
-        function TampilkanHistogramButtonPushed(comp, event)
+        function TampilkanHistogramButtonPushed(comp, ~)
             try
                 image = imread(comp.NamaFileCitraLabel1.Text);
                 comp.ShowImageHistogram(image)
@@ -279,7 +279,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: JalankanPerataanHistogramButton
-        function JalankanPerataanHistogramButtonPushed(comp, event)
+        function JalankanPerataanHistogramButtonPushed(comp, ~)
             try
                 image = imread(comp.NamaFileCitraLabel3.Text);
 
@@ -301,7 +301,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: JalankanHistogramSpecificationButton
-        function JalankanHistogramSpecificationButtonPushed(comp, event)
+        function JalankanHistogramSpecificationButtonPushed(comp, ~)
             try
                 image = imread(comp.NamaFileCitraInputLabel.Text);
                 reference = imread(comp.NamaFileCitraReferensiLabel.Text);
@@ -342,7 +342,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: ImagebrighteningButton
-        function JalankanImageBrightening(comp, event)
+        function JalankanImageBrightening(comp, ~)
             try
                 image = imread(comp.JudulCitraLabel2.Text);
 
@@ -360,7 +360,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: LogtransformButton
-        function JalankanLogTransform(comp, event)
+        function JalankanLogTransform(comp, ~)
             try
                 image = imread(comp.JudulCitraLabel2.Text);
 
@@ -378,7 +378,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: nthtransformButton
-        function JalankanNthtransform(comp, event)
+        function JalankanNthtransform(comp, ~)
             try
                 image = imread(comp.JudulCitraLabel2.Text);
 
@@ -396,7 +396,7 @@ classdef app_exported < matlab.ui.componentcontainer.ComponentContainer
         end
 
         % Button pushed function: ContraststretchingButton
-        function JalankanContrastStrecthing(comp, event)
+        function JalankanContrastStrecthing(comp, ~)
             try
                 image = imread(comp.JudulCitraLabel2.Text);
 
